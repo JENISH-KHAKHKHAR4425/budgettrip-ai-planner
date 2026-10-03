@@ -167,7 +167,7 @@ export function validateOutputConstraints(input: TripInput, output: EvaluationOu
 
 export function toUserFacingError(error: unknown) {
   const message = error instanceof Error ? error.message : ''
-  if (/429|rate.?limit|quota/i.test(message)) return 'The AI provider has temporarily limited requests. Please wait a minute before trying again.'
+  if (/429|rate.?limit|quota/i.test(message)) return 'Google AI has reached its current request limit. The planner tried its backup model too; check Google AI Studio usage and quota for this API key, or try again after the limit resets.'
   if (/api.?key|unauthorized|403|401/i.test(message)) return 'The AI service could not authenticate. Check the server environment configuration.'
   if (/timeout|network|fetch failed/i.test(message)) return 'The AI service is temporarily unavailable. Please try again.'
   return 'We could not complete the trip plan. Please adjust your trip details and try again.'

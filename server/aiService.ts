@@ -50,23 +50,53 @@ export class PlanRejectedError extends Error {
   }
 }
 
-function getModel() {
+const fallbackModelName = 'gemini-3.5-flash-lite'
+
+function getModel(name: string = modelName) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new MissingGeminiKeyError()
-  return createGoogleGenerativeAI({ apiKey })(modelName)
+  return createGoogleGenerativeAI({ apiKey })(name)
+}
+
+function isRateLimitError(error: unknown): boolean {
+  const seen = new Set<object>()
+  let current = error
+  while (current && typeof current === 'object' && !seen.has(current)) {
+    seen.add(current)
+    const candidate = current as { message?: unknown; statusCode?: unknown; status?: unknown; cause?: unknown }
+    if (candidate.statusCode === 429 || candidate.status === 429 || /429|resource_exhausted|rate.?limit|quota/i.test(String(candidate.message ?? ''))) return true
+    current = candidate.cause
+  }
+  return false
 }
 
 async function structured<S extends z.ZodType>(schema: S, system: string, prompt: string): Promise<z.infer<S>> {
-  const { output } = await generateText({
-    model: getModel(),
+  const request = (name: string) => generateText({
+    model: getModel(name),
     system,
     prompt,
     output: Output.object({ schema }),
     temperature: 0.35,
     maxRetries: 1,
   })
-  if (!output) throw new Error('The AI returned an empty response.')
-  return output as z.infer<S>
+
+  let result: Awaited<ReturnType<typeof request>>
+  try {
+    result = await request(modelName)
+  } catch (error) {
+    if (!isRateLimitError(error)) throw error
+    console.warn('[v0] Gemini primary model rate-limited; trying the Flash-Lite fallback.')
+    try {
+      result = await request(fallbackModelName)
+    } catch (fallbackError) {
+      if (isRateLimitError(fallbackError)) {
+        throw new Error('Gemini rate limit reached on both planning models.')
+      }
+      throw fallbackError
+    }
+  }
+  if (!result.output) throw new Error('The AI returned an empty response.')
+  return result.output as z.infer<S>
 }
 
 export async function extractConstraints(input: TripInput) {
