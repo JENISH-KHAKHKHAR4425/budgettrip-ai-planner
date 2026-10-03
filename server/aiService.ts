@@ -123,7 +123,6 @@ export async function replanTrip(input: TripInput, currentCost: number, issue: s
 }
 
 export async function planTrip(input: TripInput): Promise<TripPlan> {
-  await extractConstraints(input)
   let draft = await generateInitialDraft(input)
   let verification = verifyBudget(draft.cost_breakdown, input.budget)
   draft = { ...draft, itinerary: reconcileDailyCosts(draft.itinerary, verification.totalCost) }
@@ -144,7 +143,7 @@ export async function planTrip(input: TripInput): Promise<TripPlan> {
     ...draft,
     verification,
     process: {
-      constraintsExtracted: true,
+      constraintsValidated: true,
       travelOptionsGenerated: true,
       itineraryGenerated: true,
       costEstimated: true,
