@@ -147,7 +147,7 @@ export const comparisonOutputSchema = z.object({
 export type EvaluationOutput = z.infer<typeof evaluationOutputSchema>
 export type ComparisonOutput = z.infer<typeof comparisonOutputSchema>
 
-export const suspiciousInputPattern = /(?:ignore\s+(?:all\s+)?(?:previous|prior|above)\s+instructions?|system\s+prompt|developer\s+message|reveal\s+(?:your\s+)?(?:instructions|prompt)|jailbreak|write\s+(?:me\s+)?(?:python|javascript|code)|hack\s+(?:a|the|this)\s+website|political\s+advice|tell\s+me\s+a\s+joke|act\s+as\s+(?:a\s+)?(?:hacker|politician)|\b(?:malware|phishing|exploit)\b)/i
+export const suspiciousInputPattern = /(?:ignore\s+(?:all\s+)?(?:previous|prior|above)\s+instructions?|ignore\s+(?:all\s+)?your\s+rules?|system\s+prompt|developer\s+message|reveal\s+(?:your\s+)?(?:instructions|prompt)|jailbreak|write\s+(?:me\s+)?(?:python|javascript|code)|write\s+(?:me\s+)?(?:a\s+)?poem|hack\s+(?:a|the|this)\s+website|political\s+advice|tell\s+me\s+a\s+joke|act\s+as\s+(?:a\s+)?(?:hacker|politician)|\b(?:malware|phishing|exploit)\b)/i
 
 export function validatePlanningIntent(input: TripInput) {
   const userText = [input.origin, input.destination, input.customPreferences].join(' ')
