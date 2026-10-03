@@ -1,0 +1,16 @@
+import Link from 'next/link'
+import { ArrowUpRight, Check, Code2, Compass, GitBranch, ShieldCheck, Sparkles } from 'lucide-react'
+import { promptHistoryEntries, promptHistoryNote, promptTechniques } from '@/server/prompts'
+
+export function PromptHistoryPage() {
+  return <main className="wrap interior-page"><div className="eyebrow">PROMPT ENGINEERING LAB · 02</div><div className="interior-heading"><div><h1>Prompt history</h1><p>A transparent record of the techniques and guardrails behind this trip planner.</p></div><span className="history-version">CURRENT · V6</span></div><div className="history-note"><GitBranch size={17} /><span>{promptHistoryNote}</span></div><div className="history-list">{promptHistoryEntries.map((item, index) => <article className="history-item" key={item.version}><span className="history-index">{String(index + 1).padStart(2, '0')}</span><div className="history-content"><span className="history-version-label">{item.version}</span><h2>{item.change}</h2><p>{item.reason}</p><div className="history-result"><Check size={14} />{item.result}</div></div></article>)}</div><section className="technique-section"><div className="eyebrow">CURRENT TOOLKIT</div><h2>Prompting techniques</h2><div className="technique-list">{promptTechniques.map((technique) => <span key={technique}><Check size={13} />{technique}</span>)}</div></section></main>
+}
+
+export function AboutPage() {
+  const principles = [
+    { icon: <Sparkles size={18} />, title: 'A staged prompt chain', text: 'Constraints, options, itinerary and estimates are handled as separate, inspectable steps.' },
+    { icon: <ShieldCheck size={18} />, title: 'Application-side verification', text: 'TypeScript calculates the cost and checks each travel-time limit. The model does not decide whether its own budget adds up.' },
+    { icon: <Code2 size={18} />, title: 'Structured outputs', text: 'Zod schemas validate trip inputs and each model response before it moves to the next stage.' },
+  ]
+  return <main className="wrap interior-page about-page"><div className="eyebrow">ABOUT THE PROJECT</div><div className="interior-heading"><div><h1>Built for better planning.</h1><p>BudgetTrip AI is a working prototype exploring how thoughtful prompts and practical guardrails can help make budget travel planning clearer.</p></div><Compass className="about-compass" size={66} strokeWidth={1} /></div><div className="principle-grid">{principles.map((item, index) => <article className="principle-card" key={item.title}><span className="principle-number">0{index + 1}</span><span className="principle-icon">{item.icon}</span><h2>{item.title}</h2><p>{item.text}</p></article>)}</div><div className="about-callout"><div><span className="eyebrow">HONEST BY DESIGN</span><h2>Not a booking site.<br /><em>A better starting point.</em></h2><p>Estimates are AI-generated, not live fares or availability. Always confirm details before booking. No personal travel profile is stored.</p><Link href="/#planner" className="hero-link">Plan a trip <ArrowUpRight size={16} /></Link></div><div className="about-checklist">{['Gemini calls stay server-side', 'Costs are checked in application code', 'No fake evaluation metrics', 'No live booking or inventory claims'].map((line) => <span key={line}><Check size={14} />{line}</span>)}</div></div></main>
+}

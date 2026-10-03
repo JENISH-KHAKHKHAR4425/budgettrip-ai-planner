@@ -14,6 +14,7 @@ export function verifyBudget(costs: CostBreakdown, budget: number): BudgetVerifi
     throw new Error('Budget calculation received invalid category values.')
   }
   const totalCost = values.reduce((sum, value) => sum + value, 0)
+  if (!Number.isSafeInteger(totalCost)) throw new Error('Budget total exceeds the safe integer range.')
   const remainingBudget = budget - totalCost
   return {
     status: totalCost <= budget ? 'PASS' : 'FAIL',
@@ -22,6 +23,20 @@ export function verifyBudget(costs: CostBreakdown, budget: number): BudgetVerifi
     remainingBudget,
     budgetUtilization: Number(((totalCost / budget) * 100).toFixed(1)),
   }
+}
+
+export function reconcileDailyCosts<T extends { estimated_daily_cost: number }>(itinerary: T[], tripTotal: number): T[] {
+  if (itinerary.length === 0) return itinerary
+  const weights = itinerary.map((day) => Math.max(0, day.estimated_daily_cost))
+  const weightTotal = weights.reduce((sum, value) => sum + value, 0)
+  let allocated = 0
+  return itinerary.map((day, index) => {
+    const cost = index === itinerary.length - 1
+      ? tripTotal - allocated
+      : Math.floor(tripTotal * (weightTotal > 0 ? weights[index] / weightTotal : 1 / itinerary.length))
+    allocated += cost
+    return { ...day, estimated_daily_cost: cost }
+  })
 }
 
 export function validatePlanConstraints(input: TripInput, itinerary: Array<{ day: number; travel_time_hours: number }>) {
